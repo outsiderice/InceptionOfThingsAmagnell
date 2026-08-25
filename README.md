@@ -31,11 +31,16 @@ A declarative, GitOps continuous delivery tool for Kubernetes.
 We decided to use cloud-init to be able to easily deploy our host machine with our preferred configuration anywhere, and specially as a more lightweight than other virtual machine providers with GUIs.
 
 ### Monitoring and testing
-How do these technologies fail? What should I watch and how?
 The 3 parts to this project are:
 - K3s and Vagrant
 - K3s and three simple applications
 - K3d and Argo CD
+
+In part one we want to monitor:
+- vm health (CPU, memory, disk)
+- k3s is running in each vm
+- k3s nodes status
+- Connectivity between nodes
 
 ## Part one
 Set up 2 virtual machines with vagrant and install k3s in them.
