@@ -14,7 +14,8 @@ export LIBVIRT_DEFAULT_URI="qemu:///session"
 
 vm__get_ami() {
 	# Download Automated Machine Image (AMI) if missing.
-	local AMI_URL="https://cloud-images.ubuntu.com/resolute/current/resolute-server-cloudimg-amd64.img";
+	## local AMI_URL="https://cloud-images.ubuntu.com/resolute/current/resolute-server-cloudimg-amd64.img";
+	local AMI_URL="https://cloud-images.ubuntu.com/minimal/releases/resolute/release/ubuntu-26.04-minimal-cloudimg-amd64v3.img";
 	local AMI_VARIANT="$(basename $AMI_URL)";
 	local AMI_PATH="${PROJECT_DIR:?}";
 	local AMI_IMG="$AMI_PATH/$AMI_VARIANT";
@@ -54,8 +55,10 @@ vm__cloudinit() {
 	local DOMAIN=${1:-"$VM_NAME"};
 	local USER=${2:-"$USER"};
 	local KEY="${SSH_DIR:?}/$(vm__keyname $DOMAIN $USER)";
-
 	local CI_USERDATA="${PROJECT_DIR}/user-data.yaml";
+	local VM_DIR="$(dirname ${CI_USERDATA:?})";
+	
+	test -d "${VM_DIR}" || mkdir -v "${VM_DIR}";
 	source "./ci-userdata.sh";
 	if debug; then
 		cloud-init schema --config-file "${CI_USERDATA:?}";
@@ -104,9 +107,11 @@ vm_create() {
 	virt-install \
 		--name "$VM_NAME" \
 		--memory "$VM_RAM" \
-		--vcpus "$VM_VCPUS" \
+		--memorybacking "access.mode=shared,source.type=memfd" \
+		--vcpus "$VM_VCPUS,sockets=1,cores=$VM_VCPUS,threads=1" \
 		--cpu "host-passthrough,cache.mode=passthrough" \
 		--disk "path=$VM_IMG,bus=virtio,cache=none,io=native,discard=unmap" \
+		--disk "none" \
 		--filesystem "$(pwd),shared9p,mode=mapped" \
 		--cloud-init "user-data=$PROJECT_DIR/user-data.yaml" \
 		--osinfo "ubuntu-lts-latest" \
@@ -114,6 +119,8 @@ vm_create() {
 		--tpm "none" \
 		--import \
 		--graphics "none" \
+		--controller "type=pci,model=pcie-root" \
+		--controller "type=usb,model=none" \
 		--noautoconsole;
 	vm__hostfwd "$VM_NAME" "2222" "22";
 }
@@ -161,7 +168,8 @@ vm_usage() {
 }
 
 debug() {
-	if test -z "${DEBUG}"; then
+	if test -z "${DEBUG}"
+	then
 		false;
 	else
 		true;
@@ -171,7 +179,7 @@ debug() {
 #### main
 
 if debug; then
-        set -x;
+	set -x;
 fi
 
 if test $# -eq 0; then
@@ -196,8 +204,14 @@ case "$1" in
 		shift
 		vm_console;
 		;;
-	'help'|''|'*')
+	'ci')
+		shift
+		vm__cloudinit;
+		;;
+	'help'|'')
 		vm_usage;
-		exit 1;
+		;;
+	*)
+		virsh $@;
 		;;
 esac
