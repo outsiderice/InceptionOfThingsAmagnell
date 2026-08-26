@@ -9,7 +9,6 @@ VM_IMG="$PROJECT_DIR/$VM_NAME.qcow2"
 # APT_CACHE_IMG="$PROJECT_DIR/apt-cache.qcow2"
 SSH_DIR="$PWD/.ssh"
 
-export VIRSH_DEFAULT_CONNECT_URI="qemu:///session"
 export LIBVIRT_DEFAULT_URI="qemu:///session"
 
 vm__get_ami() {
