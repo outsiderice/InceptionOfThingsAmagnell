@@ -223,10 +223,18 @@ vm_usage() {
 	printf "  %s: %s\n" "delete" "..." >&2
 }
 
+debug() {
+	if test -z "${DEBUG}"; then
+		false;
+	else
+		true;
+	fi
+}
+
 #### main
 
-if test ${DEBUG:-"0"} != "0"; then
-	set -x;
+if debug; then
+        set -x;
 fi
 
 if test $# -eq 0; then
