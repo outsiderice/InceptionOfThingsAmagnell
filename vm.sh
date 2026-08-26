@@ -108,7 +108,7 @@ vm_create() {
 		--cpu "host-passthrough,cache.mode=passthrough" \
 		--disk "path=$VM_IMG,bus=virtio,cache=none,io=native,discard=unmap" \
 		--filesystem "$(pwd),shared9p,mode=mapped" \
-		--cloud-init "user-data=$PROJECT_DIR/user-data.yaml,meta-data=$PROJECT_DIR/meta-data.yaml" \
+		--cloud-init "user-data=$PROJECT_DIR/user-data.yaml" \
 		--osinfo "ubuntu-lts-latest" \
 		--boot "uefi" \
 		--tpm "none" \

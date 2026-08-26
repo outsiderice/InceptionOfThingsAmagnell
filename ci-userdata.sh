@@ -62,8 +62,3 @@ runcmd:
   - needrestart -r a
 final_message: Wubba Lubba dub-dub!
 EOF
-
-# meta-data.yaml
-cat <<EOF > "$(dirname ${CI_USERDATA:?})/meta-data.yaml"
-local-hostname: ${PROJECT_NAME:?}
-EOF
