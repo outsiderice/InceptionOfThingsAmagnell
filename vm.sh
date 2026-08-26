@@ -4,7 +4,7 @@ export LIBVIRT_DEFAULT_URI="qemu:///session";
 unset VM_NAME;
 PROJECT_NAME="inception-of-things";
 PROJECT_DIR="${HOME:?}/goinfre/${PROJECT_NAME:?}";
-SSH_DIR="${PROJECT_DIR:?}/.ssh";
+SSH_DIR="${PROJECT_DIR:?}/ssh";
 
 vm__get_ami() {
 	# Download Automated Machine Image (AMI) if missing.
