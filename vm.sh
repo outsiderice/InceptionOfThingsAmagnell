@@ -1,15 +1,10 @@
 #!/bin/bash
 
-PROJECT_NAME="inception-of-things"
-PROJECT_DIR="${HOME:?}/goinfre/${PROJECT_NAME:?}"
-
-VM_NAME="${PROJECT_NAME:?}"
-VM_IMG="$PROJECT_DIR/$VM_NAME.qcow2"
-
-# APT_CACHE_IMG="$PROJECT_DIR/apt-cache.qcow2"
-SSH_DIR="$PWD/.ssh"
-
-export LIBVIRT_DEFAULT_URI="qemu:///session"
+export LIBVIRT_DEFAULT_URI="qemu:///session";
+unset VM_NAME;
+PROJECT_NAME="inception-of-things";
+PROJECT_DIR="${HOME:?}/goinfre/${PROJECT_NAME:?}";
+SSH_DIR="${PROJECT_DIR:?}/.ssh";
 
 vm__get_ami() {
 	# Download Automated Machine Image (AMI) if missing.
@@ -54,11 +49,11 @@ vm__cloudinit() {
 	local DOMAIN=${1:-"$VM_NAME"};
 	local USER=${2:-"$USER"};
 	local KEY="${SSH_DIR:?}/$(vm__keyname $DOMAIN $USER)";
-	local CI_USERDATA="${PROJECT_DIR}/user-data.yaml";
+	local CI_USERDATA="${PROJECT_DIR}/${DOMAIN}/user-data.yaml";
 	local VM_DIR="$(dirname ${CI_USERDATA:?})";
 	
 	test -d "${VM_DIR}" || mkdir -v "${VM_DIR}";
-	source "./ci-userdata.sh";
+	source "./${DOMAIN}/ci-userdata.sh";
 	if debug; then
 		cloud-init schema --config-file "${CI_USERDATA:?}";
 	fi
@@ -98,9 +93,10 @@ vm_create() {
 	local DOMAIN=${1:-"$VM_NAME"};
 	local VM_VCPUS="4";
 	local VM_RAM="4096";
+	local VM_IMG="${PROJECT_DIR}/${DOMAIN}.qcow2";
 	
 	vm__domain_isdefined $VM_NAME 2>/dev/null && exit;
-	vm__clone_ami "$(vm__get_ami)" "$VM_IMG" "32G";
+	vm__clone_ami "$(vm__get_ami)" "${VM_IMG}" "32G";
 	vm__keygen "$DOMAIN";
 	vm__cloudinit;
 	virt-install \
@@ -109,10 +105,10 @@ vm_create() {
 		--memorybacking "access.mode=shared,source.type=memfd" \
 		--vcpus "$VM_VCPUS,sockets=1,cores=$VM_VCPUS,threads=1" \
 		--cpu "host-passthrough,cache.mode=passthrough" \
-		--disk "path=$VM_IMG,bus=virtio,cache=none,io=native,discard=unmap" \
+		--disk "path=${VM_IMG},bus=virtio,cache=none,io=native,discard=unmap" \
 		--disk "none" \
 		--filesystem "$(pwd),shared9p,mode=mapped" \
-		--cloud-init "user-data=$PROJECT_DIR/user-data.yaml" \
+		--cloud-init "user-data=${PROJECT_DIR}/${DOMAIN}/user-data.yaml" \
 		--osinfo "ubuntu-lts-latest" \
 		--boot "uefi" \
 		--tpm "none" \
@@ -126,12 +122,13 @@ vm_create() {
 
 vm_delete() {
 	local DOMAIN=${1:-"$VM_NAME"};
+	local VM_IMG="${PROJECT_DIR}/${DOMAIN}.qcow2";
 
 	vm__domain_isdefined $VM_NAME || exit;
 	virsh destroy $DOMAIN;
 	virsh undefine $DOMAIN --nvram;
-	if test -f "$VM_IMG"; then
-		rm -v "$VM_IMG"
+	if test -f "${VM_IMG}"; then
+		rm -v "${VM_IMG}"
 	fi
 }
 
@@ -158,17 +155,20 @@ vm_console() {
 }
 
 vm_usage() {
-	printf "Usage: %s [OPTIONS]... [VM_NAME]\n" "$0" >&2
-	printf "COMMANDS:\n" >&2
-	printf "  %s: %s\n" "create" "..." >&2
-	printf "  %s: %s\n" "ssh" "..." >&2
-	printf "  %s: %s\n" "console" "..." >&2
-	printf "  %s: %s\n" "delete" "..." >&2
+	local SUBDIR_NAME="${VM_NAME:-"p\{1..3\},bonus"}";
+
+	printf "Usage: %s %s COMMAND [OPTIONS]...\n" "./vm.sh" "${SUBDIR_NAME}" >&2;
+	printf "Commands are:\n" >&2;
+	printf "%s: %s\n" "create" "..." >&2;
+	printf "%s: %s\n" "delete" "..." >&2;
+	printf "%s: %s\n" "ssh" "..." >&2;
+	printf "%s: %s\n" "console" "..." >&2;
+	printf "%s: %s\n" "ci" "..." >&2;
+	printf "%s: %s\n" "help" "..." >&2;
 }
 
 debug() {
-	if test -z "${DEBUG}"
-	then
+	if test -z "${DEBUG}"; then
 		false;
 	else
 		true;
@@ -177,15 +177,37 @@ debug() {
 
 #### main
 
+# Log script traces if debug returns true.
 if debug; then
 	set -x;
 fi
 
+# Script expects at least one argument.
 if test $# -eq 0; then
-	vm_usage;
-	exit 1;
+	vm_usage && exit 1;
 fi
 
+# When first arguments is "--" send next arguments to `virsh` shell.
+if test "$1" = "--"; then
+	shift
+	virsh $@;
+	exit;
+fi
+
+# Check first argument is one of the subdirectories. Ex.: p{1..3},bonus.
+SUBDIRS="$(find . -mindepth 1 -maxdepth 1 -type d -not -name '.*' -printf '%f\n')";
+for SUBDIR in $SUBDIRS; do
+	if test "$1" = "$SUBDIR"; then
+		VM_NAME="$1";
+		shift;
+		break;
+	fi
+done
+if test -z "${VM_NAME}"; then
+	vm_usage && exit 1;
+fi
+
+# Execute cli's functions/commands.
 case "$1" in
 	'create')
 		shift
@@ -211,6 +233,6 @@ case "$1" in
 		vm_usage;
 		;;
 	*)
-		virsh $@;
+		vm_usage && exit 1;
 		;;
 esac
