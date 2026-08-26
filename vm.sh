@@ -93,7 +93,7 @@ vm_create() {
 	local DOMAIN=${1:-"$VM_NAME"};
 	local VM_VCPUS="4";
 	local VM_RAM="4096";
-	local VM_IMG="${PROJECT_DIR}/${DOMAIN}.qcow2";
+	local VM_IMG="${PROJECT_DIR}/${DOMAIN}/${DOMAIN}.qcow2";
 	
 	vm__domain_isdefined $VM_NAME 2>/dev/null && exit;
 	vm__clone_ami "$(vm__get_ami)" "${VM_IMG}" "32G";
