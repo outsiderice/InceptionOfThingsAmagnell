@@ -16,6 +16,7 @@ package_upgrade: false
 packages:
 - tree
 - docker.io
+- curl
 allow_public_ssh_keys: true
 disable_root: true
 disable_root_opts: no-port-forwarding,no-agent-forwarding,no-X11-forwarding
@@ -32,6 +33,10 @@ runcmd:
   - chown ${USER:?}:${USER:?} /mnt/${PROJECT_NAME:?}
   - systemctl enable docker
   - systemctl start docker
+  - curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
+  - curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+  - install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+  - rm kubectl
   - usermod -aG docker ${USER}
 final_message: Wubba Lubba dub-dub!
 EOF
