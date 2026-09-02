@@ -33,13 +33,23 @@ runcmd:
   - chown ${USER:?}:${USER:?} /mnt/${PROJECT_NAME:?}
   - systemctl enable docker
   - systemctl start docker
+# Install k3d and kubectl
   - curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
   - curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
   - install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
   - rm kubectl
   - usermod -aG docker ${USER}
+# Install argoCD
   - curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
   - install -m 555 argocd-linux-amd64 /usr/local/bin/argocd
   - rm argocd-linux-amd64
+# Create k8 cluster and namespaces
+  - k3d cluster create mycluster
+  - mkdir -p /home/amagnell/.kube
+  - k3d kubeconfig merge mycluster
+  - cp /root/.config/k3d/kubeconfig-mycluster.yaml /home/amagnell/.kube/config
+  - kubectl config use-context k3d-mycluster 
+  - kubectl create namespace argocd
+  - kubectl create namespace dev
 final_message: Wubba Lubba dub-dub!
 EOF
