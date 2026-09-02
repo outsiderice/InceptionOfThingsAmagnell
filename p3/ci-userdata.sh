@@ -46,8 +46,7 @@ runcmd:
 # Create k8 cluster and namespaces
   - k3d cluster create mycluster
   - mkdir -p /home/amagnell/.kube
-  - k3d kubeconfig merge mycluster
-  - cp /root/.config/k3d/kubeconfig-mycluster.yaml /home/amagnell/.kube/config
+  - k3d kubeconfig get mycluster > /home/amagnell/.kube/config
   - kubectl config use-context k3d-mycluster 
   - kubectl create namespace argocd
   - kubectl create namespace dev
