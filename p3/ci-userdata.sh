@@ -50,5 +50,6 @@ runcmd:
   - kubectl config use-context k3d-mycluster 
   - kubectl create namespace argocd
   - kubectl create namespace dev
+  - kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 final_message: Wubba Lubba dub-dub!
 EOF
