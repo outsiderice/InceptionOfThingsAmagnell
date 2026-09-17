@@ -8,8 +8,8 @@ SSH_DIR="${PROJECT_DIR:?}/ssh";
 
 vm__get_ami() {
 	# Download Automated Machine Image (AMI) if missing.
-	## local AMI_URL="https://cloud-images.ubuntu.com/resolute/current/resolute-server-cloudimg-amd64.img";
-	local AMI_URL="https://cloud-images.ubuntu.com/minimal/releases/resolute/release/ubuntu-26.04-minimal-cloudimg-amd64v3.img";
+	local AMI_URL="https://cloud-images.ubuntu.com/resolute/current/resolute-server-cloudimg-amd64.img";
+	##local AMI_URL="https://cloud-images.ubuntu.com/minimal/releases/resolute/release/ubuntu-26.04-minimal-cloudimg-amd64v3.img";
 	local AMI_VARIANT="$(basename $AMI_URL)";
 	local AMI_PATH="${PROJECT_DIR:?}";
 	local AMI_IMG="$AMI_PATH/$AMI_VARIANT";
@@ -96,6 +96,7 @@ vm_create() {
 	local VM_IMG="${PROJECT_DIR}/${DOMAIN}/${DOMAIN}.qcow2";
 	
 	vm__domain_isdefined $VM_NAME 2>/dev/null && exit;
+	mkdir -p "${PROJECT_DIR:?}/${DOMAIN:?}";
 	vm__clone_ami "$(vm__get_ami)" "${VM_IMG}" "32G";
 	vm__keygen "$DOMAIN";
 	vm__cloudinit;
