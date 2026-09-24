@@ -1,5 +1,7 @@
 #!/bin/sh
 
+local VAGRANT_KEY=
+
 # user-data.yaml
 cat <<EOF >"${CI_USERDATA:?}"
 #cloud-config
@@ -21,23 +23,27 @@ apt:
   conf: |
     APT::Install-Recommends "false";
     APT::Install-Suggests "false";
-  sources:
-    hashicorp:
-      keyid: 798A EC65 4E5C 1542 8C8E  42EE AA16 FCBC A621 E701
-      source: 'deb [arch=$(dpkg --print-architecture) signed-by=\$KEY_FILE] https://apt.releases.hashicorp.com \$RELEASE main'
 package_update: true
 package_upgrade: false
 packages:
-- bridge-utils
-- qemu-system-x86
-- qemu-utils
-- libvirt-daemon-system
-- libvirt-clients
-- libvirt-dev
-- nfs-kernel-server
-- build-essential
-- pkgconf
-- vagrant
+  - wget
+  - gpg
+  - libvirt-dev
+  - ruby-libvirt
+  - libxml2-dev
+  - libxslt-dev
+  - zlib1g-dev
+  - gcc
+  - make
+  - bridge-utils
+  - qemu-system-x86
+  - qemu-utils
+  - libvirt-daemon-system
+  - libvirt-clients
+  - libvirt-dev
+  - nfs-kernel-server
+  - build-essential
+  - pkgconf
 allow_public_ssh_keys: true
 disable_root: true
 disable_root_opts: no-port-forwarding,no-agent-forwarding,no-X11-forwarding
@@ -49,6 +55,13 @@ bootcmd:
   - printf "%s\n%s" "[Unit]" "After=cloud-init.target" | sudo systemctl edit sshd.service --stdin
   - systemctl daemon-reload
 runcmd:
+  - wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+  - echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/hashicorp.list
+  - apt-get update
+  - apt-get install -y vagrant
+  - vagrant plugin install vagrant-libvirt
+  - echo "export VAGRANT_DEFAULT_PROVIDER=libvirt" >> /home/ubuntu/.bashrc
+
   - [ groupmod, -g, "$(id --group)", ${USER:?} ]
   - [ usermod, -u, "$(id --user)", ${USER:?} ]
   - chown ${USER:?}:${USER:?} /mnt/${PROJECT_NAME:?}
