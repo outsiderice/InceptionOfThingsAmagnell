@@ -1,12 +1,22 @@
 # Inception-of-Things
 This project is an introduction to using kubernetes.
 
+It has 3 parts:
+- K3s and Vagrant. Use vagrant to provision 2 machines with k3s, one running as the server and the other as an agent
+- K3s and three simple applications
+- K3d and ArgoCD. In two k8s namespaces, apply ArgoCD to one and to the other pull an app image from docker hub. In this way ArgoCD is configured so that integrations to the app are done using gitops by pushing changes to a remote repository which argocd keeps track of. meh
+
 ## Usage
 Clone repository. 
 
-Run ./vm.sh create to create the machine. 
+For this project we made a script to provision a virtual machine fitting for each part:
+- p1 is provisioned with libvirt and vagrant. Works with ubuntu minimal
+- p2 is provisioned with
+- p3 is provisioned with docker, k3d and argocd. Doesn't work with an ubuntu minimal image.
 
-Then run ./vm.sh console or ./vm.sh ssh to connect to the virtual machine. Note that to connect with ssh you have to wait until the key is generated which takes some time after running vm create.
+Use `./vm.sh <px> create` to create the appropiate machine.
+
+Then run `./vm.sh <px> console` or `./vm.sh <px> ssh` to connect to the virtual machine. Note that to connect with ssh you have to wait until the key is generated which takes some time after running vm create.
 
 ## Pre-work
 What is k8s?
