@@ -1,7 +1,5 @@
 #!/bin/sh
 
-local VAGRANT_KEY=
-
 # user-data.yaml
 cat <<EOF >"${CI_USERDATA:?}"
 #cloud-config
