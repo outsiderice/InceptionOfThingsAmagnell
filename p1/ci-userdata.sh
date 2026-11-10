@@ -53,12 +53,17 @@ bootcmd:
   - printf "%s\n%s" "[Unit]" "After=cloud-init.target" | sudo systemctl edit sshd.service --stdin
   - systemctl daemon-reload
 runcmd:
+# Install vagrant
   - wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
   - echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/hashicorp.list
   - apt-get update
   - apt-get install -y vagrant
   - vagrant plugin install vagrant-libvirt
   - echo "export VAGRANT_DEFAULT_PROVIDER=libvirt" >> /home/ubuntu/.bashrc
+# Install kubectl
+  - curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+  - install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+  - rm kubectl
 
   - [ groupmod, -g, "$(id --group)", ${USER:?} ]
   - [ usermod, -u, "$(id --user)", ${USER:?} ]
