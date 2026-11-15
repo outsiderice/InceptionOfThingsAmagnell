@@ -3,22 +3,9 @@
 
 ENV["LC_ALL"] = "en_US.UTF-8"
 
-# All Vagrant configuration is done below. The "2" in Vagrant.configure
-# configures the configuration version (we support older styles for
-# backwards compatibility). Please don't change it unless you know what
-# you're doing.
-
 Vagrant.configure("2") do |config|
-  # The most common configuration options are documented and commented below.
-  # For a complete reference, please see the online documentation at
-  # https://docs.vagrantup.com.
-
-  # Every Vagrant development environment requires a box. You can search for
-  # boxes at https://vagrantcloud.com/search.
   config.vm.box = "almalinux/9"
   config.vm.box_version = "9.8.20260810"
-
-  # Common libvirt provider configuration.
   config.vagrant.plugins = "vagrant-libvirt"
   config.vm.provider :libvirt do |libvirt|
     # libvirt.driver = "kvm"
@@ -33,8 +20,7 @@ Vagrant.configure("2") do |config|
   config.vm.define "#{ENV['USER']}S" do |control|
     control.vm.hostname = "#{ENV['USER']}S"
     control.vm.network "private_network", ip: "192.168.56.110"
-    # k3s needs this port 
-    control.vm.network "forwarded_port", guest: 6443, host: 6443, host_ip: "127.0.0.1"
+    control.vm.network "forwarded_port", id: "k3s", host: 6443, guest: 6443
     # Install k3s server mode
     control.vm.provision "shell", inline: <<-SHELL
       curl -sfL https://get.k3s.io | sh -s - server\
@@ -46,11 +32,11 @@ Vagrant.configure("2") do |config|
   end
 
   # Agent machine (AKA worker)
-  config.vm.define "#{ENV['USER']}SW" do |control|
-    control.vm.hostname = "#{ENV['USER']}SW"
-    control.vm.network "private_network", ip: "192.168.56.111"
+  config.vm.define "#{ENV['USER']}SW" do |worker|
+    worker.vm.hostname = "#{ENV['USER']}SW"
+    worker.vm.network "private_network", ip: "192.168.56.111"
     # Install k3s agent mode
-    control.vm.provision "shell", inline: <<-SHELL
+    worker.vm.provision "shell", inline: <<-SHELL
       curl -sfL https://get.k3s.io | sh -s - agent \
           --server https://192.168.56.110:6443 --token #{k3s_token}
     SHELL
