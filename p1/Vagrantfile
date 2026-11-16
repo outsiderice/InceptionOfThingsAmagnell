@@ -20,14 +20,14 @@ Vagrant.configure("2") do |config|
   config.vm.define "#{ENV['USER']}S" do |control|
     control.vm.hostname = "#{ENV['USER']}S"
     control.vm.network "private_network", ip: "192.168.56.110"
-    control.vm.network "forwarded_port", id: "k3s", host: 6443, guest: 6443
-    # Install k3s server mode
-    control.vm.provision "shell", inline: <<-SHELL
-      curl -sfL https://get.k3s.io | sh -s - server\
-          --write-kubeconfig-mode 644 --token #{k3s_token}
-      sudo mkdir -p /home/vagrant/.kube
-      sudo cp /etc/rancher/k3s/k3s.yaml /home/vagrant/.kube/config
-      sudo chown -R vagrant:vagrant /home/vagrant/.kube
+    control.vm.provision "shell", env: { "K3S_TOKEN" => k3s_token }, inline: <<-SHELL
+      # Open K3s ports in firewalld
+      firewall-cmd --permanent --add-port=6443/tcp
+      firewall-cmd --permanent --add-port=8472/udp
+      firewall-cmd --reload
+
+      # Install k3s
+      curl -sfL https://get.k3s.io | sh -
     SHELL
   end
 
@@ -35,11 +35,16 @@ Vagrant.configure("2") do |config|
   config.vm.define "#{ENV['USER']}SW" do |worker|
     worker.vm.hostname = "#{ENV['USER']}SW"
     worker.vm.network "private_network", ip: "192.168.56.111"
-    # Install k3s agent mode
-    worker.vm.provision "shell", inline: <<-SHELL
-      curl -sfL https://get.k3s.io | sh -s - agent \
-          --server https://192.168.56.110:6443 --token #{k3s_token}
+    worker.vm.provision "shell", env: {
+      "K3S_URL"   => "https://192.168.56.110:6443",
+      "K3S_TOKEN" => k3s_token
+    }, inline: <<-SHELL
+      # Open Flannel VXLAN port in firewalld
+      firewall-cmd --permanent --add-port=8472/udp
+      firewall-cmd --reload
+
+      # Install k3s
+      curl -sfL https://get.k3s.io | sh -
     SHELL
   end
-
 end
