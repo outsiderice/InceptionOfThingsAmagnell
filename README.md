@@ -61,12 +61,13 @@ Set up 2 virtual machines with vagrant and install k3s in them.
 - [x] Be able to connect with SSH on both machines with no password.
 - [x] k3s installed in controller mode in machine one.
 - [x] k3s installed in agent mode in machine two.
-- [ ] Nodes can communicate between them
+- [ ] Nodes work correctly
 
 ### How to write a Vagrantfile according to modern practices
 
 ### K3s installation
 k3s installation was made easy by just using the script provided by k3s and we didn't encounter any issues.
+We added a bit of configuration to have better access to kubectl.
 
 ## Optimization
 We are very limited in our work and production environment therefore optimization is a real worry.
