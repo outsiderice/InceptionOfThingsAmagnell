@@ -61,7 +61,7 @@ Set up 2 virtual machines with vagrant and install k3s in them.
 - [x] Be able to connect with SSH on both machines with no password.
 - [x] k3s installed in controller mode in machine one.
 - [x] k3s installed in agent mode in machine two.
-- [ ] Nodes work correctly
+- [x] Nodes are configured as asked
 
 ### How to write a Vagrantfile according to modern practices
 
