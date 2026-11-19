@@ -16,6 +16,7 @@ package_update: true
 package_upgrade: false
 packages:
 - tree
+- curl
 allow_public_ssh_keys: true
 disable_root: true
 disable_root_opts: no-port-forwarding,no-agent-forwarding,no-X11-forwarding
@@ -30,5 +31,6 @@ runcmd:
   - groupmod -g "$(id --group)" ${USER:?}
   - usermod -u "$(id --user)" ${USER:?}
   - chown ${USER:?}:${USER:?} /mnt/${PROJECT_NAME:?}
+  - curl -sfL https://get.k3s.io | sh -
 final_message: Wubba Lubba dub-dub!
 EOF
