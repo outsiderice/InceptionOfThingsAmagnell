@@ -31,6 +31,11 @@ runcmd:
   - groupmod -g "$(id --group)" ${USER:?}
   - usermod -u "$(id --user)" ${USER:?}
   - chown ${USER:?}:${USER:?} /mnt/${PROJECT_NAME:?}
+# install k3s
   - curl -sfL https://get.k3s.io | sh -
+# install helm
+  - curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-4
+  - chmod 700 get_helm.sh
+  - ./get_helm.sh
 final_message: Wubba Lubba dub-dub!
 EOF
