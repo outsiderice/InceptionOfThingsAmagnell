@@ -39,5 +39,6 @@ runcmd:
   - chmod 700 get_helm.sh
   - ./get_helm.sh
   - rm get_helm.sh
+  - export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 final_message: Wubba Lubba dub-dub!
 EOF
