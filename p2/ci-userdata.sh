@@ -33,6 +33,7 @@ runcmd:
   - chown ${USER:?}:${USER:?} /mnt/${PROJECT_NAME:?}
 # install k3s
   - curl -sfL https://get.k3s.io | sh -
+  - chown ${USER:?}:${USER:?} /etc/rancher/k3s/k3s.yaml
 # install helm
   - curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-4
   - chmod 700 get_helm.sh
