@@ -33,12 +33,13 @@ runcmd:
   - chown ${USER:?}:${USER:?} /mnt/${PROJECT_NAME:?}
 # install k3s
   - curl -sfL https://get.k3s.io | sh -
-  - chown ${USER:?}:${USER:?} /etc/rancher/k3s/k3s.yaml
+  - mkdir -p /home/${USER:?}/.kube
+  - cp /etc/rancher/k3s/k3s.yaml /home/${USER:?}/.kube/config
+  - chown -R ${USER:?}:${USER:?} /home/${USER:?}/.kube
 # install helm
   - curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-4
   - chmod 700 get_helm.sh
   - ./get_helm.sh
   - rm get_helm.sh
-  - export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 final_message: Wubba Lubba dub-dub!
 EOF
